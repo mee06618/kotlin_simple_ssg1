@@ -26,7 +26,7 @@ fun main() {
             }
             "/article/list" -> {
 
-                articleRepository.viewArticles(rq.getIntParam("page", 1),rq.getStringParam("keyword",default = "xxx"))
+                articleRepository.viewArticles(rq.getIntParam("page", 1),rq.getStringParam("keyword",default = ""))
 
             }
             "/article/modify" -> {
@@ -140,33 +140,36 @@ object articleRepository {
     }
 
     fun viewArticles(id: Int, keyword: String) {
-        var lastNum= (id * 5)
-        var firstNum=(id - 1) * 5
-        val temp = articles.reversed()
-        if (id == null) {
 
-            for (i in 0 until 5) {
-                println("${temp[i].id} / ${temp[i].title} / ${temp[i].body} / ${temp[i].regDate} / ${temp[i].updateDate}")
-            }
-        } else {
+        var filtered1Articles= mutableListOf<Article>()
 
-            var arr2 = mutableListOf<Article>()
-            if (temp.any { it.title == keyword }) {
-                for (i in 0 until 100) {
-                    if (temp[i].title.contains(keyword))
-                        arr2.add(temp[i])
-                }
 
-                for (i in firstNum until lastNum) {
-                    println("${arr2[i].id} / ${arr2[i].title} / ${arr2[i].body} / ${arr2[i].regDate} / ${arr2[i].updateDate}")
+            for (article in articles) {
+                if (article.title.contains(keyword)) {
+                    filtered1Articles.add(article)
                 }
             }
-            for (i in firstNum until lastNum) {
-                println("${temp[i].id} / ${temp[i].title} / ${temp[i].body} / ${temp[i].regDate} / ${temp[i].updateDate}")
-            }
 
+        val itemsCountInAPage = 5
+        val offsetCount = (id - 1) * itemsCountInAPage
+        val startIndex = filtered1Articles.lastIndex - offsetCount
+        var endIndex = startIndex - itemsCountInAPage + 1
 
+        if (endIndex < 0) {
+            endIndex = 0
         }
+
+        val filtered2Articles = mutableListOf<Article>()
+
+        for (i in startIndex downTo endIndex) {
+            filtered2Articles.add(filtered1Articles[i])
+        }
+        println("번호 / 작성날짜 / 제목")
+
+        for (article in filtered2Articles) {
+            println("${article.id} / ${article.regDate} / ${article.title}")
+        }
+
     }
         fun modifyArticles(num: Int) {
             print("새제목 : ")
